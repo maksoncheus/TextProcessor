@@ -14,7 +14,7 @@
         <Grid.RowDefinitions>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Grid.Column="0" Margin="10,10,10,10">
+        <Grid Grid.Row="0" Grid.Column="0" Margin="10,10,0,10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="0.3*"/>
                 <RowDefinition Height="0.2*"/>
@@ -25,7 +25,7 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <Button Content="Выбрать файл(ы)" Click="OpenDialog" Grid.Column="0" Grid.Row="0" Margin="0,0,5,5"/>
-            <Button IsEnabled="{Binding FilesName.Count}" Content="Сохранить файл(ы)" Click="SaveFiles" Grid.Column="1" Grid.Row="0" Margin="10,0,0,5"/>
+            <Button IsEnabled="{Binding FilesName.Count}" Content="Сохранить файл(ы)" Click="SaveFiles" Grid.Column="1" Grid.Row="0" Margin="5,0,0,5"/>
             <TextBlock Text="{Binding FilesName.Count, StringFormat='Number of Files: {0}'}" Grid.ColumnSpan="2" Grid.Row="1" />
             <ListBox ItemsSource="{Binding FilesName}" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2"/>
         </Grid>
@@ -41,9 +41,9 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <CheckBox Content="Удалить слова длиной менее:" IsChecked="{Binding IsRemovingWords}" Grid.ColumnSpan="2" Grid.Row="0"/>
-            <TextBox IsEnabled="{Binding IsRemovingWords}" PreviewTextInput="TextBox_PreviewTextInput" Text="{Binding CountCharsToRemove}" Grid.ColumnSpan="2" Grid.Row="1"/>
-            <CheckBox IsChecked="{Binding IsRemovingPunctuation}" Content="Удалить знаки пунктуации" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2"/>
+            <CheckBox Name="Checkbox_RemoveWords" Content="Удалить слова длиной менее:" IsChecked="{Binding IsRemovingWords}" Grid.ColumnSpan="2" Grid.Row="0"/>
+            <TextBox Name="Textbox_CountCharsToRemove" IsEnabled="{Binding IsRemovingWords}" PreviewTextInput="TextBox_PreviewTextInput" Text="{Binding CountCharsToRemove}" Grid.ColumnSpan="2" Grid.Row="1"/>
+            <CheckBox Name="Checkbox_RemovePunct" IsChecked="{Binding IsRemovingPunctuation}" Content="Удалить знаки препинания" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2"/>
         </Grid>
     </Grid>
 </Window>

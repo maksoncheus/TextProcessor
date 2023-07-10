@@ -40,18 +40,15 @@ namespace TextProcessor
         private async void SaveFiles(object sender, RoutedEventArgs e)
         {
             string[] files = (DataContext as ViewModel)?.FilesName.ToArray();
-            List<Task> tasks = new();
             foreach (string filePath in files)
             {
                 SaveFileDialog dialog = new() { DefaultExt = ".txt", AddExtension = true, Title = $"Сохранить обработанный файл {System.IO.Path.GetFileName(filePath)}"};
                 while (dialog.ShowDialog() != true) { MessageBox.Show("Пожалуйста, укажите место сохранения файла"); }
-                tasks.Add( Task.Run( () => ViewModel.ProcessFile(filePath, dialog.FileName)) );
-                //Task.Run( () =>  ViewModel.ProcessFile(filePath, dialog.FileName));
+                (DataContext as ViewModel)?.StartProcessingTask(filePath, dialog.FileName);
             }
-            if (tasks.Count > 0)
+            if ((DataContext as ViewModel)?.Tasks.Count > 0)
             {
-                Task t = Task.WhenAll(tasks);
-                await t;
+                await Task.WhenAll((DataContext as ViewModel)?.Tasks);
                 MessageBox.Show("Все файлы успешно обработаны");
                 (DataContext as ViewModel)?.ResetProperties();
             }

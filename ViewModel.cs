@@ -27,23 +27,25 @@ namespace TextProcessor
             OnPropertyChanged(propertyName);
             return true;
         }
+        public List<Task> Tasks { get; set; }
         private static readonly char[] punctuationMarks = {',','.','…', '?','!', ';', ':', '-', '—', '=', '-', '`', '~', '≈', '|', '║', '(', ')', '{','}','[',']','<','>','/','\\', '"', '«', '»', '⟶', '⟵', '+' };
         private ObservableCollection<string>? filesName;
         public ObservableCollection<string>? FilesName
         { get { return filesName; } set { filesName = value; OnPropertyChanged(nameof(FilesName)); } }
-        private static bool _isRemovingWords;
+        private bool _isRemovingWords;
         public bool IsRemovingWords { get { return _isRemovingWords; } set { _isRemovingWords = value; OnPropertyChanged(nameof(IsRemovingWords)); } }
-        private static bool _isRemovingPunctuation;
+        private bool _isRemovingPunctuation;
         public bool IsRemovingPunctuation { get { return _isRemovingPunctuation; } set { _isRemovingPunctuation = value; OnPropertyChanged(nameof(IsRemovingPunctuation)); } }
-        private static string? _countCharsToRemove;
+        private string? _countCharsToRemove;
         public string? CountCharsToRemove { get { return _countCharsToRemove; } set { _countCharsToRemove = value; OnPropertyChanged(nameof(CountCharsToRemove)); } }
 
         public ViewModel()
         {
             FilesName = new();
+            Tasks = new();
         }
         public void SetFilesName(string[] filesname) => FilesName = new ObservableCollection<string>(filesname);
-        public static void ProcessFile(string inputFile, string outputFile)
+        public void ProcessFile(string inputFile, string outputFile, bool RemoveWords, bool RemovePunctuation, string CountToRemove)
         {
             string? line;
             StreamReader reader = new(inputFile);
@@ -56,9 +58,9 @@ namespace TextProcessor
                 foreach (string word in words)
                 {
                     string wordToPlace = word.Trim(punctuationMarks);
-                    editedLine += (_isRemovingWords && !String.IsNullOrEmpty(_countCharsToRemove) && wordToPlace.Length > 0 && wordToPlace.Length < Convert.ToInt32(_countCharsToRemove))
+                    editedLine += (RemoveWords && !String.IsNullOrEmpty(CountToRemove) && wordToPlace.Length > 0 && wordToPlace.Length < Convert.ToInt32(CountToRemove))
                         ? "" 
-                        : _isRemovingPunctuation ? $"{wordToPlace} " : $"{word} ";
+                        : RemovePunctuation ? $"{wordToPlace} " : $"{word} ";
                 }
                 if(editedLine.Contains(' ')) editedLine = editedLine.Remove(editedLine.LastIndexOf(' '));
                 if (editedLine.Length > 0)
@@ -70,10 +72,15 @@ namespace TextProcessor
         }
         public void ResetProperties()
         {
+            Tasks.Clear();
             FilesName = new();
             IsRemovingWords = false;
             IsRemovingPunctuation = false;
             CountCharsToRemove = new string("");
+        }
+        public void StartProcessingTask(string a, string b)
+        {
+            Tasks.Add( Task.Run( () => ProcessFile(a, b, IsRemovingWords, IsRemovingPunctuation, CountCharsToRemove) ) );
         }
     }
 }
