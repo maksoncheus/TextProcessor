@@ -49,7 +49,7 @@ namespace TextProcessor
             if ((DataContext as ViewModel)?.Tasks.Count > 0)
             {
                 await Task.WhenAll((DataContext as ViewModel)?.Tasks);
-                MessageBox.Show("Все файлы успешно обработаны");
+                MessageBox.Show("Все файлы обработаны");
                 (DataContext as ViewModel)?.ResetProperties();
             }
             else MessageBox.Show("Файлы не выбраны!");

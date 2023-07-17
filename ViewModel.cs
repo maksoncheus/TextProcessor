@@ -1,16 +1,9 @@
-﻿using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 
 namespace TextProcessor
 {
@@ -27,49 +20,25 @@ namespace TextProcessor
             OnPropertyChanged(propertyName);
             return true;
         }
-        public List<Task> Tasks { get; set; }
-        private static readonly char[] punctuationMarks = {',','.','…', '?','!', ';', ':', '-', '—', '=', '-', '`', '~', '≈', '|', '║', '(', ')', '{','}','[',']','<','>','/','\\', '"', '«', '»', '⟶', '⟵', '+' };
+        private TextProcess _process;
+        private bool _isRemovingWords;
+        private bool _isRemovingPunctuation;
         private ObservableCollection<string>? filesName;
+        private string? _countCharsToRemove;
+        public List<Task> Tasks { get; set; }
         public ObservableCollection<string>? FilesName
         { get { return filesName; } set { filesName = value; OnPropertyChanged(nameof(FilesName)); } }
-        private bool _isRemovingWords;
         public bool IsRemovingWords { get { return _isRemovingWords; } set { _isRemovingWords = value; OnPropertyChanged(nameof(IsRemovingWords)); } }
-        private bool _isRemovingPunctuation;
         public bool IsRemovingPunctuation { get { return _isRemovingPunctuation; } set { _isRemovingPunctuation = value; OnPropertyChanged(nameof(IsRemovingPunctuation)); } }
-        private string? _countCharsToRemove;
         public string? CountCharsToRemove { get { return _countCharsToRemove; } set { _countCharsToRemove = value; OnPropertyChanged(nameof(CountCharsToRemove)); } }
 
         public ViewModel()
         {
+            _process = new TextProcess();
             FilesName = new();
             Tasks = new();
         }
         public void SetFilesName(string[] filesname) => FilesName = new ObservableCollection<string>(filesname);
-        public void ProcessFile(string inputFile, string outputFile, bool RemoveWords, bool RemovePunctuation, string CountToRemove)
-        {
-            string? line;
-            StreamReader reader = new(inputFile);
-            StreamWriter writer = new(outputFile);
-            line = reader.ReadLine();
-            while (line != null)
-            {
-                string editedLine = "";
-                string[] words = line.Split(' ');
-                foreach (string word in words)
-                {
-                    string wordToPlace = word.Trim(punctuationMarks);
-                    editedLine += (RemoveWords && !String.IsNullOrEmpty(CountToRemove) && wordToPlace.Length > 0 && wordToPlace.Length < Convert.ToInt32(CountToRemove))
-                        ? "" 
-                        : RemovePunctuation ? $"{wordToPlace} " : $"{word} ";
-                }
-                if(editedLine.Contains(' ')) editedLine = editedLine.Remove(editedLine.LastIndexOf(' '));
-                if (editedLine.Length > 0)
-                    writer.WriteLine(editedLine);
-                line = reader.ReadLine();
-            }
-            reader.Close();
-            writer.Close();
-        }
         public void ResetProperties()
         {
             Tasks.Clear();
@@ -80,7 +49,16 @@ namespace TextProcessor
         }
         public void StartProcessingTask(string a, string b)
         {
-            Tasks.Add( Task.Run( () => ProcessFile(a, b, IsRemovingWords, IsRemovingPunctuation, CountCharsToRemove) ) );
+            string error;
+            Tasks.Add(Task.Run(
+                () =>
+                    { 
+                        _process.ProcessFile(a, b, IsRemovingWords, IsRemovingPunctuation, CountCharsToRemove, out error);
+                        if (!string.IsNullOrEmpty(error))
+                            MessageBox.Show(error);
+                    }
+                )
+            );
         }
     }
 }
