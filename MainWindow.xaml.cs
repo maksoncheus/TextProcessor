@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Threading;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
 
@@ -40,19 +29,22 @@ namespace TextProcessor
         private async void SaveFiles(object sender, RoutedEventArgs e)
         {
             string[] files = (DataContext as ViewModel)?.FilesName.ToArray();
-            foreach (string filePath in files)
+            using (System.Windows.Forms.FolderBrowserDialog dialog = new() { Description = "Сохранить обработанные файлы" })
             {
-                SaveFileDialog dialog = new() { DefaultExt = ".txt", AddExtension = true, Title = $"Сохранить обработанный файл {System.IO.Path.GetFileName(filePath)}"};
-                while (dialog.ShowDialog() != true) { MessageBox.Show("Пожалуйста, укажите место сохранения файла"); }
-                (DataContext as ViewModel)?.StartProcessingTask(filePath, dialog.FileName);
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    foreach (string filePath in files)
+                    {
+                        string newFileName = $"{dialog.SelectedPath}\\{System.IO.Path.GetFileName(filePath)} +  edited {System.DateTime.Now.ToString().Replace(':','-')}.txt";
+                        (DataContext as ViewModel)?.StartProcessingTask(filePath, newFileName);
+                    }
+                    if (DataContext is ViewModel { Tasks.Count: > 0 })
+                    {
+                        await Task.WhenAll((DataContext as ViewModel)?.Tasks);
+                        MessageBox.Show("Все файлы обработаны");
+                        (DataContext as ViewModel)?.ResetProperties();
+                    }
+                else MessageBox.Show("Путь не выбран!");
             }
-            if ((DataContext as ViewModel)?.Tasks.Count > 0)
-            {
-                await Task.WhenAll((DataContext as ViewModel)?.Tasks);
-                MessageBox.Show("Все файлы обработаны");
-                (DataContext as ViewModel)?.ResetProperties();
-            }
-            else MessageBox.Show("Файлы не выбраны!");
         }
         private static readonly Regex _regex = new("[^0-9]");
         private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)

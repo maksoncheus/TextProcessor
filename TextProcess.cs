@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Text;
+
 namespace TextProcessor
 {
     /// <summary>
@@ -7,17 +9,18 @@ namespace TextProcessor
     /// </summary>
     class TextProcess
     {
-
         private static readonly char[] punctuationMarks = { ',', '.', '…', '?', '!', ';', ':', '-', '—', '=', '-', '`', '~', '≈', '|', '║', '(', ')', '{', '}', '[', ']', '<', '>', '/', '\\', '"', '«', '»', '⟶', '⟵', '+' };
-        public void ProcessFile(string inputFile, string outputFile, bool RemoveWords, bool RemovePunctuation, string CountToRemove, out string error)
+        public void ProcessFile(string inputPath, string outputPath, bool RemoveWords, bool RemovePunctuation, string? CountToRemove, out string error)
         {
             error = string.Empty;
             string? line;
+            StringBuilder stringBuilder = new();
             try
             {
-                using (StreamReader reader = new(inputFile))
-                using (StreamWriter writer = new(outputFile))
+                using (StreamReader reader = new(inputPath))
+                using (StreamWriter writer = new(outputPath))
                 {
+                    stringBuilder.AppendLine(reader.ReadLine());
                     line = reader.ReadLine();
                     while (line != null)
                     {
@@ -37,16 +40,21 @@ namespace TextProcessor
                     }
                 }
             }
+            catch (IOException IOEx) when ((IOEx.HResult & 0x0000FFFF) == 32)
+            {
+                error = $"Вы не можете читать и записывать в один и тот же файл одновременно! Файл {inputPath} не будет обработан";
+            }
+            catch (FileNotFoundException)
+            {
+                error = $"Запрашиваемый файл {inputPath} не найден.";
+            }
             catch (IOException IOEx)
             {
-                if ((IOEx.HResult & 0x0000FFFF) == 32)
-                    error = $"Вы не можете читать и записывать в один и тот же файл одновременно! Файл {inputFile} не будет обработан";
-                else
-                    error = $"Данная операция невозможна! Файл:{inputFile}. Текст ошибки :{IOEx.Message}";
+                error = $"Данная операция невозможна! Файл:{inputPath}. Текст ошибки :{IOEx.Message}";
             }
             catch (Exception ex)
             {
-                error = $"При обработке файла {inputFile} возникла ошибка: {ex.Message}";
+                error = $"При обработке файла {inputPath} возникла ошибка: {ex.Message}";
             }
         }
     }

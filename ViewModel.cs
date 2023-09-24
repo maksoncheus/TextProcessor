@@ -13,13 +13,6 @@ namespace TextProcessor
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-            field = value;
-            OnPropertyChanged(propertyName);
-            return true;
-        }
         private TextProcess _process;
         private bool _isRemovingWords;
         private bool _isRemovingPunctuation;
@@ -47,13 +40,12 @@ namespace TextProcessor
             IsRemovingPunctuation = false;
             CountCharsToRemove = new string("");
         }
-        public void StartProcessingTask(string a, string b)
+        public void StartProcessingTask(string inputPath, string outputPath)
         {
-            string error;
             Tasks.Add(Task.Run(
                 () =>
-                    { 
-                        _process.ProcessFile(a, b, IsRemovingWords, IsRemovingPunctuation, CountCharsToRemove, out error);
+                    {
+                        _process.ProcessFile(inputPath, outputPath, IsRemovingWords, IsRemovingPunctuation, CountCharsToRemove, out string error);
                         if (!string.IsNullOrEmpty(error))
                             MessageBox.Show(error);
                     }
